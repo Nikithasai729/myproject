@@ -1,4 +1,4 @@
-# 💬 Mini Project: Community Q&A Web App
+# 💬 Mini Project: Students Q&A Web Application
 
 A simple single-page web app where users can post questions and answer others' queries.
 
