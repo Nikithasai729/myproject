@@ -1,0 +1,12 @@
+{
+  "name": "community-qa-mini",
+  "version": "1.0.0",
+  "description": "A mini Q&A web app where users can ask and answer questions.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
