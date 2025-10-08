@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community Q&A</title>
+  <style>
+    body { font-family: Arial; background: #f0f4ff; padding: 20px; }
+    h1 { color: #2563eb; text-align: center; }
+    input, textarea { width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; }
+    button { padding: 8px 14px; margin-top: 10px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    .card { background: white; padding: 15px; border-radius: 8px; margin: 10px 0; box-shadow: 0 0 4px #ccc; }
+  </style>
+</head>
+<body>
+  <h1>💬 Community Q&A</h1>
+
+  <h3>Ask a Question:</h3>
+  <input id="qText" placeholder="Type your question..." />
+  <button onclick="ask()">Post Question</button>
+
+  <h3>Questions:</h3>
+  <div id="list"></div>
+
+  <script>
+    async function load() {
+      const res = await fetch('/api/questions');
+      const data = await res.json();
+      document.getElementById('list').innerHTML = data.map(q => `
+        <div class="card">
+          <b>Q${q.id}:</b> ${q.text}<br>
+          <i>Answer:</i> ${q.answer || "Not answered yet"}<br>
+          <textarea id="ans${q.id}" placeholder="Type your answer..."></textarea>
+          <button onclick="answer(${q.id})">Submit Answer</button>
+        </div>
+      `).join('');
+    }
+
+    async function ask() {
+      const text = document.getElementById('qText').value;
+      await fetch('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+      document.getElementById('qText').value = '';
+      load();
+    }
+
+    async function answer(id) {
+      const answer = document.getElementById('ans' + id).value;
+      await fetch('/api/answer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, answer }) });
+      load();
+    }
+
+    load();
+  </script>
+</body>
+</html>
