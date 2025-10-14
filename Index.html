@@ -3,196 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Students Q&A Web App</title>
+<title>Students Q&A</title>
 <style>
-  body { font-family: Arial, sans-serif; background: #eef3ff; margin: 0; padding: 20px; }
-  h1 { text-align: center; color: #2563eb; }
-  input, textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ccc; border-radius: 6px; }
-  button { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-  button:hover { background: #1741a1; }
-  .container { max-width: 700px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  .card { background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-top: 10px; }
-  .meta { font-size: 13px; color: #555; margin-top: 4px; }
-  .profile { background: #fff; padding: 10px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); text-align: center; }
-  .stats { margin-top: 10px; font-size: 14px; color: #333; }
+  body{font-family:Arial;background:#eef3ff;margin:0;padding:20px}
+  h1{text-align:center;color:#2563eb}
+  input,textarea{width:100%;padding:8px;margin-top:6px;border:1px solid #ccc;border-radius:6px}
+  button{background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:5px;margin-top:8px;cursor:pointer}
+  button:hover{background:#1741a1}
+  .box{max-width:700px;margin:auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px #ccc}
+  .card{background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:12px;margin-top:10px}
+  .meta{font-size:13px;color:#555}
+  .profile{text-align:center;margin-bottom:15px}
 </style>
 </head>
 <body>
-  <h1>💬 Students Q&A Web Application</h1>
-  <div class="container">
+<h1>💬 Students Q&A App</h1>
+<div class="box">
 
-    <!-- Login/Register -->
-    <div id="authSection">
-      <h3>Login / Register</h3>
-      <input id="username" placeholder="Username" />
-      <input id="password" type="password" placeholder="Password" />
-      <button onclick="register()">Register</button>
-      <button onclick="login()">Login</button>
-    </div>
+<!-- Auth Section -->
+<div id="auth">
+  <h3>Login / Register</h3>
+  <input id="uname" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
+  <button onclick="reg()">Register</button>
+  <button onclick="log()">Login</button>
+</div>
 
-    <!-- Main App -->
-    <div id="mainSection" style="display:none;">
-      <div class="profile">
-        <b>👤 Logged in as:</b> <span id="profileName"></span>
-        <button onclick="logout()">Logout</button>
-        <div class="stats">
-          <p>📝 Questions Asked: <b id="askedCount">0</b></p>
-          <p>💡 Answers Given: <b id="answeredCount">0</b></p>
-          <p>✏️ Answers Edited: <b id="editedCount">0</b></p>
-        </div>
-      </div>
-
-      <h3>Ask a Question</h3>
-      <input id="questionInput" placeholder="Type your question..." />
-      <button onclick="askQuestion()">Post Question</button>
-
-      <h3>All Questions</h3>
-      <div id="qaList"></div>
-    </div>
+<!-- Main App -->
+<div id="main" style="display:none">
+  <div class="profile">
+    <p><b>👤</b> <span id="user"></span> | <button onclick="logout()">Logout</button></p>
+    <p>📝 Asked: <b id="a1">0</b> | 💡 Answered: <b id="a2">0</b> | ✏️ Edited: <b id="a3">0</b></p>
   </div>
 
+  <h3>Ask a Question</h3>
+  <input id="qtxt" placeholder="Type your question...">
+  <button onclick="ask()">Post</button>
+
+  <h3>Questions</h3>
+  <div id="list"></div>
+</div>
+</div>
+
 <script>
-  // Initialize Data
-  let users = JSON.parse(localStorage.getItem("users") || "[]");
-  let questions = JSON.parse(localStorage.getItem("questions") || "[]");
-  let currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+let users=JSON.parse(localStorage.users||"[]"),
+    qs=JSON.parse(localStorage.qs||"[]"),
+    cur=JSON.parse(localStorage.cur||"null");
 
-  function saveData() {
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.setItem("questions", JSON.stringify(questions));
-    localStorage.setItem("currentUser", JSON.stringify(currentUser));
-  }
+const save=()=>{localStorage.users=JSON.stringify(users);
+                localStorage.qs=JSON.stringify(qs);
+                localStorage.cur=JSON.stringify(cur);}
 
-  // Registration
-  function register() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    if (!username || !password) return alert("Please fill in all fields.");
-    if (users.some(u => u.username === username)) return alert("Username already exists!");
-    users.push({ username, password, asked: 0, answered: 0, edited: 0 });
-    saveData();
-    alert("Registration successful! Please log in.");
-  }
+function reg(){
+  let u=uname.value.trim(),p=pass.value.trim();
+  if(!u||!p)return alert("Fill all fields");
+  if(users.some(x=>x.u===u))return alert("User exists");
+  users.push({u,p,ask:0,ans:0,edit:0});save();alert("Registered! Login now.");}
 
-  // Login
-  function login() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const user = users.find(u => u.username === username && u.password === password);
-    if (!user) return alert("Invalid username or password!");
-    currentUser = user;
-    saveData();
-    showMainApp();
-  }
+function log(){
+  let u=users.find(x=>x.u===uname.value&&x.p===pass.value);
+  if(!u)return alert("Invalid!");
+  cur=u;save();show();}
 
-  // Logout
-  function logout() {
-    currentUser = null;
-    saveData();
-    document.getElementById("authSection").style.display = "block";
-    document.getElementById("mainSection").style.display = "none";
-  }
+function logout(){cur=null;save();auth.style.display="block";main.style.display="none";}
 
-  // Show main section
-  function showMainApp() {
-    document.getElementById("authSection").style.display = "none";
-    document.getElementById("mainSection").style.display = "block";
-    document.getElementById("profileName").innerText = currentUser.username;
-    updateProfileStats();
-    loadQuestions();
-  }
+function show(){
+  auth.style.display="none";main.style.display="block";
+  user.textContent=cur.u;upd();load();}
 
-  // Update Profile Stats
-  function updateProfileStats() {
-    document.getElementById("askedCount").innerText = currentUser.asked || 0;
-    document.getElementById("answeredCount").innerText = currentUser.answered || 0;
-    document.getElementById("editedCount").innerText = currentUser.edited || 0;
-  }
+function upd(){a1.textContent=cur.ask||0;a2.textContent=cur.ans||0;a3.textContent=cur.edit||0;}
 
-  // Ask Question
-  function askQuestion() {
-    const text = document.getElementById("questionInput").value.trim();
-    if (!text) return alert("Please enter a question!");
-    const newQ = { id: Date.now(), text, answer: "", askedBy: currentUser.username, answeredBy: "" };
-    questions.push(newQ);
-    currentUser.asked = (currentUser.asked || 0) + 1;
-    users = users.map(u => u.username === currentUser.username ? currentUser : u);
-    saveData();
-    document.getElementById("questionInput").value = "";
-    loadQuestions();
-    updateProfileStats();
-  }
+function ask(){
+  let t=qtxt.value.trim();if(!t)return alert("Enter question");
+  qs.push({id:Date.now(),t,a:"",asker:cur.u,ansBy:""});
+  cur.ask++;users=users.map(x=>x.u===cur.u?cur:x);save();qtxt.value="";load();upd();}
 
-  // Submit Answer
-  function submitAnswer(id) {
-    const ansText = document.getElementById("ans-" + id).value.trim();
-    if (!ansText) return alert("Please write an answer!");
-    const q = questions.find(q => q.id === id);
-    if (q.answer && q.answeredBy === currentUser.username) {
-      alert("You already answered this question.");
-      return;
-    }
-    q.answer = ansText;
-    q.answeredBy = currentUser.username;
-    currentUser.answered = (currentUser.answered || 0) + 1;
-    users = users.map(u => u.username === currentUser.username ? currentUser : u);
-    saveData();
-    loadQuestions();
-    updateProfileStats();
-  }
+function ans(id){
+  let a=document.getElementById("ans"+id).value.trim();if(!a)return alert("Enter answer");
+  let q=qs.find(x=>x.id===id);if(q.a)return alert("Already answered");
+  q.a=a;q.ansBy=cur.u;cur.ans++;users=users.map(x=>x.u===cur.u?cur:x);save();load();upd();}
 
-  // Edit Answer
-  function editAnswer(id) {
-    const q = questions.find(q => q.id === id);
-    if (q.answeredBy !== currentUser.username) return alert("You can only edit your own answers!");
-    const newAns = prompt("Edit your answer:", q.answer);
-    if (newAns !== null && newAns.trim() !== q.answer) {
-      q.answer = newAns.trim();
-      currentUser.edited = (currentUser.edited || 0) + 1;
-      users = users.map(u => u.username === currentUser.username ? currentUser : u);
-      saveData();
-      loadQuestions();
-      updateProfileStats();
-    }
-  }
+function edit(id){
+  let q=qs.find(x=>x.id===id);
+  if(q.ansBy!==cur.u)return alert("You can only edit your answer");
+  let n=prompt("Edit your answer:",q.a);
+  if(n&&n.trim()!=q.a){q.a=n.trim();cur.edit++;users=users.map(x=>x.u===cur.u?cur:x);save();load();upd();}}
 
-  // Delete Question
-  function deleteQuestion(id) {
-    if (!confirm("Delete this question?")) return;
-    const q = questions.find(q => q.id === id);
-    if (q.askedBy === currentUser.username) {
-      currentUser.asked = Math.max((currentUser.asked || 1) - 1, 0);
-    }
-    questions = questions.filter(q => q.id !== id);
-    users = users.map(u => u.username === currentUser.username ? currentUser : u);
-    saveData();
-    loadQuestions();
-    updateProfileStats();
-  }
+function delQ(id){
+  if(!confirm("Delete?"))return;
+  qs=qs.filter(x=>x.id!==id);save();load();}
 
-  // Load Q&A List
-  function loadQuestions() {
-    const list = document.getElementById("qaList");
-    if (questions.length === 0) {
-      list.innerHTML = "<p>No questions yet. Be the first to ask!</p>";
-      return;
-    }
-    list.innerHTML = questions.map(q => `
-      <div class="card">
-        <b>Q:</b> ${q.text}<br>
-        <div class="meta">Asked by: ${q.askedBy}</div>
-        <p><b>Answer:</b> ${q.answer ? q.answer : "<i>No answer yet</i>"}</p>
-        ${q.answer ? `<div class="meta">Answered by: ${q.answeredBy}</div>` : `
-          <textarea id="ans-${q.id}" placeholder="Type your answer..."></textarea>
-          <button onclick="submitAnswer(${q.id})">Submit Answer</button>`}
-        ${q.answeredBy === currentUser?.username ? `<button onclick="editAnswer(${q.id})">Edit Answer</button>` : ""}
-        ${q.askedBy === currentUser?.username ? `<button onclick="deleteQuestion(${q.id})">Delete Question</button>` : ""}
-      </div>
-    `).join('');
-  }
-
-  // Auto-login if session exists
-  if (currentUser) showMainApp();
+function load(){
+  list.innerHTML=qs.length?qs.map(q=>`
+  <div class="card">
+    <b>Q:</b> ${q.t}<div class="meta">Asked by: ${q.asker}</div>
+    <p><b>Ans:</b> ${q.a||"<i>No answer yet</i>"}</p>
+    ${q.a?`<div class="meta">Answered by: ${q.ansBy}</div>`:
+      `<textarea id="ans${q.id}" placeholder="Answer..."></textarea><button onclick="ans(${q.id})">Submit</button>`}
+    ${q.ansBy===cur?.u?`<button onclick="edit(${q.id})">Edit</button>`:""}
+    ${q.asker===cur?.u?`<button onclick="delQ(${q.id})">Delete</button>`:""}
+  </div>`).join(""):"<p>No questions yet.</p>";
+}
+if(cur)show();
 </script>
 </body>
 </html>
