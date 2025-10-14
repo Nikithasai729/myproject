@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students Q&A</title>
+<style>
+  body{font-family:Arial;background:#eef3ff;margin:0;padding:20px}
+  h1{text-align:center;color:#2563eb}
+  input,textarea{width:100%;padding:8px;margin-top:6px;border:1px solid #ccc;border-radius:6px}
+  button{background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:5px;margin-top:8px;cursor:pointer}
+  button:hover{background:#1741a1}
+  .box{max-width:700px;margin:auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px #ccc}
+  .card{background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:12px;margin-top:10px}
+  .meta{font-size:13px;color:#555}
+  footer{text-align:center;margin-top:20px;background:#f5f7ff;padding:10px;border-radius:8px}
+</style>
+</head>
+<body>
+<h1>💬 Students Q&A App</h1>
+<div class="box">
+
+<!-- Login/Register -->
+<div id="auth">
+  <h3>Login / Register</h3>
+  <input id="uname" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- Main Section -->
+<div id="main" style="display:none">
+  <h3>Ask a Question</h3>
+  <input id="qtxt" placeholder="Type your question...">
+  <button onclick="ask()">Post</button>
+
+  <h3>Questions</h3>
+  <div id="list"></div>
+
+  <footer>
+    <h3>👤 Profile</h3>
+    <p><b>User:</b> <span id="user"></span> | <button onclick="logout()">Logout</button></p>
+    <p>📝 Asked: <b id="a1">0</b> | 💡 Answered: <b id="a2">0</b> | ✏️ Edited: <b id="a3">0</b></p>
+  </footer>
+</div>
+</div>
+
+<script>
+let users=JSON.parse(localStorage.users||"[]"),
+    qs=JSON.parse(localStorage.qs||"[]"),
+    cur=JSON.parse(localStorage.cur||"null");
+
+const save=()=>{localStorage.users=JSON.stringify(users);
+                localStorage.qs=JSON.stringify(qs);
+                localStorage.cur=JSON.stringify(cur);}
+
+function register(){
+  let u=uname.value.trim(),p=pass.value.trim();
+  if(!u||!p)return alert("Fill all fields");
+  if(users.some(x=>x.u===u))return alert("User exists");
+  users.push({u,p,ask:0,ans:0,edit:0});save();alert("Registered! Login now.");
+}
+
+function login(){
+  let u=users.find(x=>x.u===uname.value&&x.p===pass.value);
+  if(!u)return alert("Invalid credentials!");
+  cur=u;save();show();
+}
+
+function logout(){cur=null;save();auth.style.display="block";main.style.display="none";}
+
+function show(){
+  auth.style.display="none";main.style.display="block";
+  user.textContent=cur.u;update();load();
+}
+
+function update(){
+  a1.textContent=cur.ask||0;
+  a2.textContent=cur.ans||0;
+  a3.textContent=cur.edit||0;
+}
+
+function ask(){
+  let t=qtxt.value.trim();if(!t)return alert("Enter a question");
+  qs.push({id:Date.now(),t,a:"",asker:cur.u,ansBy:""});
+  cur.ask++;users=users.map(x=>x.u===cur.u?cur:x);
+  save();qtxt.value="";load();update();
+}
+
+function ans(id){
+  let a=document.getElementById("ans"+id).value.trim();if(!a)return alert("Enter answer");
+  let q=qs.find(x=>x.id===id);if(q.a)return alert("Already answered");
+  q.a=a;q.ansBy=cur.u;cur.ans++;
+  users=users.map(x=>x.u===cur.u?cur:x);save();load();update();
+}
+
+function edit(id){
+  let q=qs.find(x=>x.id===id);
+  if(q.ansBy!==cur.u)return alert("You can only edit your own answer");
+  let n=prompt("Edit your answer:",q.a);
+  if(n&&n.trim()!=q.a){q.a=n.trim();cur.edit++;users=users.map(x=>x.u===cur.u?cur:x);
+  save();load();update();}
+}
+
+function delQ(id){
+  if(!confirm("Delete?"))return;
+  qs=qs.filter(x=>x.id!==id);save();load();
+}
+
+function load(){
+  list.innerHTML=qs.length?qs.map(q=>`
+  <div class="card">
+    <b>Q:</b> ${q.t}<div class="meta">Asked by: ${q.asker}</div>
+    <p><b>Ans:</b> ${q.a||"<i>No answer yet</i>"}</p>
+    ${q.a?`<div class="meta">Answered by: ${q.ansBy}</div>`:
+      `<textarea id="ans${q.id}" placeholder="Answer..."></textarea><button onclick="ans(${q.id})">Submit</button>`}
+    ${q.ansBy===cur?.u?`<button onclick="edit(${q.id})">Edit</button>`:""}
+    ${q.asker===cur?.u?`<button onclick="delQ(${q.id})">Delete</button>`:""}
+  </div>`).join(""):"<p>No questions yet.</p>";
+}
+
+if(cur)show();
+</script>
+</body>
+</html>
